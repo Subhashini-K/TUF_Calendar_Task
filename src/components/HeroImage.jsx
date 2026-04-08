@@ -118,7 +118,7 @@ const getSeasonalDecor = (month) => {
 };
 
 /** Number of spiral holes to render */
-const SPIRAL_HOLE_COUNT = 15;
+const SPIRAL_HOLE_COUNT = 32;
 
 export const HeroImage = ({ month, year }) => {
   const monthName = MONTH_NAMES[month];
@@ -126,47 +126,56 @@ export const HeroImage = ({ month, year }) => {
   const gradient = MONTH_GRADIENTS[month];
 
   return (
-    <div className="relative w-full select-none">
+    <div className="relative w-full h-full select-none flex flex-col">
       {/* ── Spiral Binding ── */}
       <div
         className="
           relative z-10 flex items-center justify-center
-          w-full h-8 sm:h-10
-          bg-[var(--color-surface-off-white)]
+          w-full h-8 sm:h-10 shrink-0
+          bg-[#f8f9fa]
         "
         aria-hidden="true"
       >
         {/* Shadow strip below binding */}
-        <div className="absolute top-full left-0 right-0 h-2 bg-gradient-to-b from-black/10 to-transparent z-10" />
+        <div className="absolute top-full left-0 right-0 h-2 bg-gradient-to-b from-black/20 to-transparent z-10" />
 
-        <div className="flex items-center justify-center gap-[clamp(8px,2.5vw,20px)] px-4">
-          {Array.from({ length: SPIRAL_HOLE_COUNT }, (_, i) => (
-            <div key={i} className="relative flex flex-col items-center">
-              {/* Ring */}
-              <div
-                className="
-                  w-4 h-4 sm:w-5 sm:h-5
-                  rounded-full
-                  border-2 border-[var(--color-border-medium)]
-                  bg-[var(--color-surface-off-white)]
-                  shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]
-                "
-              />
-              {/* Wire connector */}
-              <div
-                className="
-                  w-[2px] h-2 sm:h-3
-                  bg-[var(--color-border-medium)]
-                  rounded-b-full
-                "
-              />
-            </div>
-          ))}
+        <div className="flex items-center justify-center gap-[clamp(4px,1vw,12px)] px-4">
+          {Array.from({ length: SPIRAL_HOLE_COUNT }, (_, i) => {
+            const isCenterHanger = i === Math.floor(SPIRAL_HOLE_COUNT / 2);
+
+            return (
+              <div key={i} className="relative flex flex-col items-center">
+                {/* Center Wall Hanger Hook */}
+                {isCenterHanger && (
+                  <div className="absolute -top-6 w-8 h-10 -ml-4 flex flex-col items-center">
+                    <div className="w-0.5 h-4 bg-gray-800" />
+                    <div className="w-6 h-6 border-b-2 border-l-2 border-r-2 border-gray-800 rounded-b-lg rotate-180" />
+                  </div>
+                )}
+
+                {/* Double Wire */}
+                <div className="absolute -top-1 sm:-top-2 flex gap-[2px] sm:gap-[3px] z-20">
+                  <div className="w-[1.5px] sm:w-[2px] h-[14px] sm:h-[18px] rounded-full bg-gradient-to-b from-gray-400 via-gray-600 to-gray-800 shadow-[1px_1px_1px_rgba(0,0,0,0.5)]" />
+                  <div className="w-[1.5px] sm:w-[2px] h-[14px] sm:h-[18px] rounded-full bg-gradient-to-b from-gray-400 via-gray-600 to-gray-800 shadow-[1px_1px_1px_rgba(0,0,0,0.5)]" />
+                </div>
+                
+                {/* Punched Hole */}
+                <div
+                  className="
+                    w-2 h-2 sm:w-2.5 sm:h-2.5
+                    rounded-full mt-1.5
+                    bg-[var(--color-border-medium)]
+                    shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]
+                  "
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* ── Hero Panel ── */}
-      <div className={`relative w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden bg-gradient-to-br ${gradient}`}>
+      <div className={`relative w-full aspect-[16/10] lg:aspect-auto lg:flex-1 lg:min-h-[400px] overflow-hidden bg-gradient-to-br ${gradient}`}>
         {/* Seasonal decorative elements */}
         {getSeasonalDecor(month)}
 

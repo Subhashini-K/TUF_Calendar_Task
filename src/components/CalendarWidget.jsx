@@ -1,8 +1,11 @@
 /**
  * CalendarWidget — Root component for the interactive wall calendar.
  *
- * Manages shared state (currentMonth, currentYear, selectedRange)
- * and composes all child components.
+ * Composes the full calendar layout:
+ *   Desktop: left panel = HeroImage, right panel = Header + Grid + Notes
+ *   Mobile:  stacked — HeroImage → Header → Grid → Notes
+ *
+ * Manages all shared state: currentMonth, currentYear, selectedRange.
  */
 
 import { useState, useCallback } from "react";
@@ -17,7 +20,7 @@ export const CalendarWidget = () => {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedRange, setSelectedRange] = useState({ start: null, end: null });
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = useCallback(() => {
     setCurrentMonth((prevMonth) => {
       if (prevMonth === 0) {
         setCurrentYear((y) => y - 1);
@@ -25,11 +28,10 @@ export const CalendarWidget = () => {
       }
       return prevMonth - 1;
     });
-    // Reset selection when changing months
     setSelectedRange({ start: null, end: null });
-  };
+  }, []);
 
-  const handleNextMonth = () => {
+  const handleNextMonth = useCallback(() => {
     setCurrentMonth((prevMonth) => {
       if (prevMonth === 11) {
         setCurrentYear((y) => y + 1);
@@ -37,35 +39,60 @@ export const CalendarWidget = () => {
       }
       return prevMonth + 1;
     });
-    // Reset selection when changing months
     setSelectedRange({ start: null, end: null });
-  };
+  }, []);
 
   const handleRangeChange = useCallback((range) => {
     setSelectedRange(range);
   }, []);
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
-      <div className="rounded-xl shadow-[var(--shadow-calendar)] bg-[var(--color-surface-card)] overflow-hidden">
+    <div className="w-full max-w-5xl mx-auto px-2 sm:px-0">
+      <div
+        className="
+          rounded-xl overflow-hidden
+          shadow-[var(--shadow-calendar)]
+          bg-[var(--color-surface-card)]
+          transition-shadow duration-[var(--transition-normal)]
+          hover:shadow-[var(--shadow-calendar-hover)]
+          flex flex-col
+        "
+      >
+        {/* ── Top Panel: Hero Image (Full Width) ── */}
         <HeroImage month={currentMonth} year={currentYear} />
+
+        {/* ── Middle Panel: Header ── */}
         <CalendarHeader
           month={currentMonth}
           year={currentYear}
           onPrev={handlePrevMonth}
           onNext={handleNextMonth}
         />
-        <CalendarGrid
-          month={currentMonth}
-          year={currentYear}
-          selectedRange={selectedRange}
-          onRangeChange={handleRangeChange}
-        />
-        <NotesPanel
-          selectedRange={selectedRange}
-          month={currentMonth}
-          year={currentYear}
-        />
+
+        {/* Subtle separator */}
+        <div className="mx-5 h-[1px] bg-[var(--color-border-light)] shrink-0" />
+
+        {/* ── Bottom Panel: Notes (Left) + Grid (Right) ── */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] lg:grid-cols-[1fr_2fr] gap-4 sm:gap-0 pt-2 sm:pt-4">
+          <div className="h-full">
+            {/* Notes Panel */}
+            <NotesPanel
+              selectedRange={selectedRange}
+              month={currentMonth}
+              year={currentYear}
+            />
+          </div>
+
+          <div className="h-full border-t sm:border-t-0 sm:border-l border-[var(--color-border-light)]">
+            {/* Calendar Grid */}
+            <CalendarGrid
+              month={currentMonth}
+              year={currentYear}
+              selectedRange={selectedRange}
+              onRangeChange={handleRangeChange}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

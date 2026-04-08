@@ -266,12 +266,19 @@ export const CalendarGrid = ({ month, year, selectedRange, onRangeChange }) => {
 
       {/* ── Day cells grid ── */}
       <div
-        className="grid grid-cols-7 gap-[1px] bg-[var(--color-border-light)] rounded-lg overflow-hidden"
+        className="grid grid-cols-7 gap-[1px] bg-[var(--color-border-light)] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[var(--color-primary-blue)] focus-within:ring-opacity-50 transition-all"
         role="rowgroup"
       >
         {days.map((cell, index) => {
           const isStart = cell.isCurrentMonth && isSameDay(cell.date, startDate);
           const isEnd = cell.isCurrentMonth && isSameDay(cell.date, endDate);
+
+          const handleKeyDown = (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault(); // Prevent page scroll on Space
+              handleDayClick(cell);
+            }
+          };
 
           return (
             <div
@@ -280,12 +287,14 @@ export const CalendarGrid = ({ month, year, selectedRange, onRangeChange }) => {
               tabIndex={cell.isCurrentMonth ? 0 : -1}
               aria-label={
                 cell.isCurrentMonth
-                  ? `${cell.day}${cell.isToday ? ", today" : ""}${isStart ? ", range start" : ""}${isEnd ? ", range end" : ""}`
+                  ? `${cell.date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}${cell.isToday ? ", today" : ""}${isStart ? ", range start" : ""}${isEnd ? ", range end" : ""}`
                   : undefined
               }
               aria-selected={isStart || isEnd || undefined}
-              className={getDayClasses(cell)}
+              aria-current={cell.isToday ? "date" : undefined}
+              className={`${getDayClasses(cell)} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-primary-blue)] focus-visible:z-20`}
               onClick={() => handleDayClick(cell)}
+              onKeyDown={cell.isCurrentMonth ? handleKeyDown : undefined}
               onMouseEnter={() => handleDayMouseEnter(cell)}
             >
               <span className="relative z-10 select-none">{cell.day}</span>

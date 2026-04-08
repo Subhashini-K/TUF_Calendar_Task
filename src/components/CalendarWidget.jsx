@@ -5,7 +5,7 @@
  * and composes all child components.
  */
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { CalendarHeader } from "./CalendarHeader";
 import { HeroImage } from "./HeroImage";
 import { CalendarGrid } from "./CalendarGrid";
@@ -14,6 +14,7 @@ export const CalendarWidget = () => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [selectedRange, setSelectedRange] = useState({ start: null, end: null });
 
   const handlePrevMonth = () => {
     setCurrentMonth((prevMonth) => {
@@ -23,6 +24,8 @@ export const CalendarWidget = () => {
       }
       return prevMonth - 1;
     });
+    // Reset selection when changing months
+    setSelectedRange({ start: null, end: null });
   };
 
   const handleNextMonth = () => {
@@ -33,7 +36,13 @@ export const CalendarWidget = () => {
       }
       return prevMonth + 1;
     });
+    // Reset selection when changing months
+    setSelectedRange({ start: null, end: null });
   };
+
+  const handleRangeChange = useCallback((range) => {
+    setSelectedRange(range);
+  }, []);
 
   return (
     <div className="w-full max-w-5xl mx-auto">
@@ -45,7 +54,12 @@ export const CalendarWidget = () => {
           onPrev={handlePrevMonth}
           onNext={handleNextMonth}
         />
-        <CalendarGrid month={currentMonth} year={currentYear} />
+        <CalendarGrid
+          month={currentMonth}
+          year={currentYear}
+          selectedRange={selectedRange}
+          onRangeChange={handleRangeChange}
+        />
       </div>
     </div>
   );

@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { CalendarHeader } from "./CalendarHeader";
 import { HeroImage } from "./HeroImage";
+import { CalendarGrid } from "./CalendarGrid";
 
 export const CalendarWidget = () => {
   const today = new Date();
@@ -44,6 +45,7 @@ export const CalendarWidget = () => {
           onPrev={handlePrevMonth}
           onNext={handleNextMonth}
         />
+        <CalendarGrid month={currentMonth} year={currentYear} />
       </div>
     </div>
   );

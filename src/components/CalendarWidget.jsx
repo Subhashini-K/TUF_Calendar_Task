@@ -9,6 +9,7 @@ import { useState, useCallback } from "react";
 import { CalendarHeader } from "./CalendarHeader";
 import { HeroImage } from "./HeroImage";
 import { CalendarGrid } from "./CalendarGrid";
+import { NotesPanel } from "./NotesPanel";
 
 export const CalendarWidget = () => {
   const today = new Date();
@@ -59,6 +60,11 @@ export const CalendarWidget = () => {
           year={currentYear}
           selectedRange={selectedRange}
           onRangeChange={handleRangeChange}
+        />
+        <NotesPanel
+          selectedRange={selectedRange}
+          month={currentMonth}
+          year={currentYear}
         />
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 /* ── Design Tokens ── */
 @theme {
+  --font-calligraphy: "Dancing Script", cursive;
   /* Primary palette */
   --color-primary-blue: #2563eb;
   --color-primary-blue-light: #3b82f6;

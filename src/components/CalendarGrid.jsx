@@ -9,6 +9,7 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
+import { getHoliday } from "../lib/holidays";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -65,10 +66,12 @@ const buildCalendarDays = (year, month) => {
   // Previous month overflow days
   for (let i = firstDayOffset - 1; i >= 0; i--) {
     const day = daysInPrevMonth - i;
+    const dateObj = new Date(prevYear, prevMonth, day);
     cells.push({
       day,
-      date: new Date(prevYear, prevMonth, day),
+      date: dateObj,
       isCurrentMonth: false,
+      holiday: getHoliday(dateObj),
     });
   }
 
@@ -77,11 +80,13 @@ const buildCalendarDays = (year, month) => {
   const isCurrentMonthYear = today.getMonth() === month && today.getFullYear() === year;
 
   for (let d = 1; d <= daysInMonth; d++) {
+    const dateObj = new Date(year, month, d);
     cells.push({
       day: d,
-      date: new Date(year, month, d),
+      date: dateObj,
       isCurrentMonth: true,
       isToday: isCurrentMonthYear && today.getDate() === d,
+      holiday: getHoliday(dateObj),
     });
   }
 
@@ -91,10 +96,12 @@ const buildCalendarDays = (year, month) => {
   const remaining = 7 - (cells.length % 7);
   if (remaining < 7) {
     for (let d = 1; d <= remaining; d++) {
+      const dateObj = new Date(nextYear, nextMonth, d);
       cells.push({
         day: d,
-        date: new Date(nextYear, nextMonth, d),
+        date: dateObj,
         isCurrentMonth: false,
+        holiday: getHoliday(dateObj),
       });
     }
   }
@@ -169,7 +176,7 @@ export const CalendarGrid = ({ month, year, selectedRange, onRangeChange }) => {
    * Computes the visual state classes for a given day cell.
    */
   const getDayClasses = useCallback(
-    (cell) => {
+    (cell, index, daysLength) => {
       const classes = [];
 
       // Base styles
@@ -180,6 +187,12 @@ export const CalendarGrid = ({ month, year, selectedRange, onRangeChange }) => {
         "bg-[var(--color-surface-white)]",
         "transition-all duration-[var(--transition-fast)]"
       );
+
+      // Apply border radius to the extreme corners of the grid
+      if (index === 0) classes.push("rounded-tl-lg");
+      if (index === 6) classes.push("rounded-tr-lg");
+      if (index === daysLength - 7) classes.push("rounded-bl-lg");
+      if (index === daysLength - 1) classes.push("rounded-br-lg");
 
       if (!cell.isCurrentMonth) {
         classes.push("text-[var(--color-text-light)]", "cursor-default");
@@ -203,6 +216,7 @@ export const CalendarGrid = ({ month, year, selectedRange, onRangeChange }) => {
           "font-bold",
           "z-10"
         );
+        // Note: within selection, applying explicit rounding for selection boundaries inside the grid
         if (isStart) classes.push("rounded-l-lg");
         if (isEnd) classes.push("rounded-r-lg");
         if (isStart && isEnd) classes.push("rounded-lg");
@@ -266,7 +280,7 @@ export const CalendarGrid = ({ month, year, selectedRange, onRangeChange }) => {
 
       {/* ── Day cells grid ── */}
       <div
-        className="grid grid-cols-7 gap-[1px] bg-[var(--color-border-light)] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[var(--color-primary-blue)] focus-within:ring-opacity-50 transition-all"
+        className="grid grid-cols-7 gap-[1px] bg-[var(--color-border-light)] rounded-lg focus-within:ring-2 focus-within:ring-[var(--color-primary-blue)] focus-within:ring-opacity-50 transition-all"
         role="rowgroup"
       >
         {days.map((cell, index) => {
@@ -292,24 +306,57 @@ export const CalendarGrid = ({ month, year, selectedRange, onRangeChange }) => {
               }
               aria-selected={isStart || isEnd || undefined}
               aria-current={cell.isToday ? "date" : undefined}
-              className={`${getDayClasses(cell)} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-primary-blue)] focus-visible:z-20`}
+              className={`${getDayClasses(cell, index, days.length)} group hover:z-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-primary-blue)] focus-visible:z-20`}
               onClick={() => handleDayClick(cell)}
               onKeyDown={cell.isCurrentMonth ? handleKeyDown : undefined}
               onMouseEnter={() => handleDayMouseEnter(cell)}
             >
               <span className="relative z-10 select-none">{cell.day}</span>
 
-              {/* Today indicator dot */}
-              {cell.isToday && !isStart && !isEnd && (
-                <span
+              {/* Special Indicators Container */}
+              <div className="absolute bottom-1 sm:bottom-1.5 left-0 right-0 flex justify-center gap-1">
+                {/* Today indicator dot */}
+                {cell.isToday && !isStart && !isEnd && (
+                  <span
+                    className="
+                      w-1 h-1 sm:w-1.5 sm:h-1.5
+                      rounded-full
+                      bg-[var(--color-today-accent)]
+                    "
+                    aria-hidden="true"
+                  />
+                )}
+
+                {/* Holiday indicator dot */}
+                {cell.holiday && cell.isCurrentMonth && (
+                  <span
+                    className={`
+                      w-1 h-1 sm:w-1.5 sm:h-1.5
+                      rounded-full
+                      ${isStart || isEnd ? 'bg-white' : 'bg-emerald-500'}
+                    `}
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
+
+              {/* Holiday Tooltip */}
+              {cell.holiday && cell.isCurrentMonth && (
+                <div
                   className="
-                    absolute bottom-1 left-1/2 -translate-x-1/2
-                    w-1 h-1 sm:w-1.5 sm:h-1.5
-                    rounded-full
-                    bg-[var(--color-today-accent)]
+                    absolute bottom-full mb-2 left-1/2 -translate-x-1/2
+                    hidden group-hover:block z-50
+                    px-2 py-1
+                    bg-gray-900 text-white text-xs font-medium
+                    rounded shadow-lg whitespace-nowrap
+                    pointer-events-none opacity-0 group-hover:opacity-100
+                    transition-opacity duration-200
                   "
-                  aria-hidden="true"
-                />
+                >
+                  {cell.holiday}
+                  {/* Tooltip caret */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-4 border-transparent border-t-gray-900" />
+                </div>
               )}
             </div>
           );

@@ -119,3 +119,38 @@ textarea {
   background: var(--color-range-bg);
   color: var(--color-primary-blue-dark);
 }
+
+/* ───────────────────────────────────────────────────────── 
+ * 3D Page Flip Animations
+ * ───────────────────────────────────────────────────────── */
+@keyframes flip-down {
+  0% {
+    transform: perspective(1200px) rotateX(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(1200px) rotateX(-90deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flip-up {
+  0% {
+    transform: perspective(1200px) rotateX(90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: perspective(1200px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-flip-out {
+  animation: flip-down 0.25s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+  transform-origin: top center;
+}
+
+.animate-flip-in {
+  animation: flip-up 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transform-origin: top center;
+}

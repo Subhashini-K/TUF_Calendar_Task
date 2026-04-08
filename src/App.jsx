@@ -1,11 +1,11 @@
+import { CalendarWidget } from "./components/CalendarWidget";
+
 const App = () => {
   return (
-    <div>
-      <h1 class="text-3xl font-bold text-blue-500">
-        Tailwind is working!
-      </h1>
-    </div>
-  )
-}
+    <main className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-[var(--color-surface-off-white)]">
+      <CalendarWidget />
+    </main>
+  );
+};
 
 export default App;

@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import { CalendarHeader } from "./CalendarHeader";
+import { HeroImage } from "./HeroImage";
 
 export const CalendarWidget = () => {
   const today = new Date();
@@ -36,6 +37,7 @@ export const CalendarWidget = () => {
   return (
     <div className="w-full max-w-5xl mx-auto">
       <div className="rounded-xl shadow-[var(--shadow-calendar)] bg-[var(--color-surface-card)] overflow-hidden">
+        <HeroImage month={currentMonth} year={currentYear} />
         <CalendarHeader
           month={currentMonth}
           year={currentYear}
